@@ -1,278 +1,133 @@
 import amazon from "./assets/amazon.png"
+import tesla from "./assets/Tesla.png"
+import swiggy from "./assets/swiggy.png"
 import Experience from "./assets/experience.png"
+import logo from "./assets/logo.png"
 import jobSite from "./assets/jobSite.png"
 import salary from "./assets/salary.png"
+import { useEffect, useState } from "react"
+import axios from 'axios'
+
+// Utility function to convert salary to LPA format
+const convertToLPA = (salary) => {
+    const lpa = salary / 100000;
+    // If it's a whole number, don't show decimal places
+    return `${Number.isInteger(lpa) ? lpa : lpa.toFixed(1)}LPA`;
+};
+
+// Utility function to get company logo
+const getCompanyLogo = (companyName) => {
+    const name = companyName.toLowerCase();
+    if (name === 'amazon') return amazon;
+    if (name === 'tesla') return tesla;
+    if (name === 'swiggy') return swiggy;
+    return logo;
+};
+
+// Utility function to calculate time difference
+const getTimeDifference = (createdAt) => {
+    const now = new Date();
+    const created = new Date(createdAt);
+    const diffInHours = Math.floor((now - created) / (1000 * 60 * 60));
+    
+    if (diffInHours < 24) {
+        return `${diffInHours}h Ago`;
+    } else {
+        const diffInDays = Math.floor(diffInHours / 24);
+        return `${diffInDays}d Ago`;
+    }
+};
 
 export default function CompanyCard(){
+    const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchJobs = async () => {
+        try {
+            setLoading(true);
+            const backendUrl = import.meta.env.VITE_BACKEND_URL;
+            const response = await axios.get(`${backendUrl}/api/jobs`);
+            setJobs(response.data);
+            setLoading(false);
+        } catch (err) {
+            console.error('Error fetching jobs:', err);
+            setError('Failed to load jobs');
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchJobs();
+
+        // Add event listener for job creation
+        const handleJobCreated = () => {
+            fetchJobs();
+        };
+
+        window.addEventListener('jobCreated', handleJobCreated);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('jobCreated', handleJobCreated);
+        };
+    }, []);
+
+    if (loading) return <div className="text-center py-10">Loading jobs...</div>;
+    if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
+
     return(
         <>
-        <div className="flex items-center justify-center flex-wrap gap-4.5 mt-8 mb-10">
-            <div className="w-[316px] h-[360px] border rounded-[16px] bg-white shadow-md p-3">
-                <div className="flex items-start justify-between ">
-                    <div className="w-[83px] h-[82px]">
-                        <img src={amazon} alt="amazon" />
+        <div className="max-w-[1400px] mx-auto px-8">
+            <div className="flex items-center justify-start flex-wrap gap-4.5 mt-8 mb-10">
+                {jobs.map((job) => (
+                    <div key={job._id} className="w-[316px] h-[360px] border rounded-[16px] bg-white shadow-md p-3">
+                        <div className="flex items-start justify-between">
+                            <div className="w-[83px] h-[82px] flex items-center justify-center">
+                                <img 
+                                    src={getCompanyLogo(job.companyName)} 
+                                    alt={job.companyName}
+                                    className={`${
+                                        ['amazon', 'tesla', 'swiggy'].includes(job.companyName.toLowerCase())
+                                        ? 'w-full h-full object-contain'
+                                        : 'w-[60px] h-[60px] rounded-full'
+                                    }`}
+                                />
+                            </div>
+                            <div className="flex mt-2.5 mr-1.5">
+                                <button className="rounded-[10px] bg-[#B0D9FF] text-black text-xs px-3 py-2">
+                                    {getTimeDifference(job.createdAt)}
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-[20px] font-[700] pl-1.5 pt-3">{job.jobTitle}</p>
+                        </div>
+                        <div className="flex items-center justify-between mt-2.5 mx-2 pr-3 text-[#5A5A5A]">
+                            <div className="flex items-center gap-1">
+                                <img src={Experience} alt="experience" className="w-[17px] h-[13.2px]"/>
+                                <p className="text-[16px]">1-3 yr Exp</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <img src={jobSite} alt="jobSite" className="w-[17px] h-[14.3px]"/>
+                                <p className="text-[16px]">{job.jobType}</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <img src={salary} alt="salary" className="w-[16px] h-[18px]" />
+                                <p className="text-[16px]">{convertToLPA(job.salaryMax)}</p>
+                            </div>
+                        </div>
+                        <div className="h-[86px] line-clamp-4 truncate text-wrap mt-4.5 mx-0.5">
+                            <p className="text-[14px]">{job.description}</p>
+                        </div>
+                        <div>
+                            <button className="bg-[#00AAFF] w-full text-white text-[16px] py-[12px] px-[10px] rounded-[10px] mt-6 cursor-pointer hover:bg-[#0088cc]">
+                                Apply Now
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex mt-2.5 mr-1.5">
-                        <button className="rounded-[10px] bg-[#B0D9FF] text-black text-xs px-3 py-2">24h Ago</button>
-                    </div>
-                </div>
-                <div>
-                    <p className="text-[20px] font-[700] pl-1.5 pt-3">Full Stack Developer</p>
-                </div>
-                <div className="flex items-center  justify-between mt-2.5 mx-2 pr-3 text-[#5A5A5A]">
-                    <div className="flex items-center gap-1">
-                        <img src={Experience} alt="experience"  className="w-[17px] h-[13.2px]"/>
-                        <p className="text-[16px]">1-3 yr Exp</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={jobSite} alt="jobSite"  className="w-[17px] h-[14.3px]"/>
-                        <p className="text-[16px]">Onsite</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={salary} alt="salary" className="w-[16px] h-[18px]" />
-                        <p className="text-[16px]">12LPA</p>
-                    </div>
-                </div>
-                <div className="h-[86px]  line-clamp-4 truncate text-wrap  mt-4.5 mx-0.5">
-                    <p className="text-[14px]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit. </p>
-                </div>
-                <div>
-                    <button className="bg-[#00AAFF] w-full text-white text-[16px] py-[12px] px-[10px] rounded-[10px] mt-6 cursor-pointer">Apply Now</button>
-                </div>
+                ))}
             </div>
-            <div className="w-[316px] h-[360px] border rounded-[16px] bg-white shadow-md p-3">
-                <div className="flex items-start justify-between ">
-                    <div className="w-[83px] h-[82px]">
-                        <img src={amazon} alt="amazon" />
-                    </div>
-                    <div className="flex mt-2.5 mr-1.5">
-                        <button className="rounded-[10px] bg-[#B0D9FF] text-black text-xs px-3 py-2">24h Ago</button>
-                    </div>
-                </div>
-                <div>
-                    <p className="text-[20px] font-[700] pl-1.5 pt-3">Full Stack Developer</p>
-                </div>
-                <div className="flex items-center  justify-between mt-2.5 mx-2 pr-3 text-[#5A5A5A]">
-                    <div className="flex items-center gap-1">
-                        <img src={Experience} alt="experience"  className="w-[17px] h-[13.2px]"/>
-                        <p className="text-[16px]">1-3 yr Exp</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={jobSite} alt="jobSite"  className="w-[17px] h-[14.3px]"/>
-                        <p className="text-[16px]">Onsite</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={salary} alt="salary" className="w-[16px] h-[18px]" />
-                        <p className="text-[16px]">12LPA</p>
-                    </div>
-                </div>
-                <div className="h-[86px]  line-clamp-4 truncate text-wrap  mt-4.5 mx-0.5">
-                    <p className="text-[14px]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit. </p>
-                </div>
-                <div>
-                    <button className="bg-[#00AAFF] w-full text-white text-[16px] py-[12px] px-[10px] rounded-[10px] mt-6 cursor-pointer">Apply Now</button>
-                </div>
-            </div>
-            <div className="w-[316px] h-[360px] border rounded-[16px] bg-white shadow-md p-3">
-                <div className="flex items-start justify-between ">
-                    <div className="w-[83px] h-[82px]">
-                        <img src={amazon} alt="amazon" />
-                    </div>
-                    <div className="flex mt-2.5 mr-1.5">
-                        <button className="rounded-[10px] bg-[#B0D9FF] text-black text-xs px-3 py-2">24h Ago</button>
-                    </div>
-                </div>
-                <div>
-                    <p className="text-[20px] font-[700] pl-1.5 pt-3">Full Stack Developer</p>
-                </div>
-                <div className="flex items-center  justify-between mt-2.5 mx-2 pr-3 text-[#5A5A5A]">
-                    <div className="flex items-center gap-1">
-                        <img src={Experience} alt="experience"  className="w-[17px] h-[13.2px]"/>
-                        <p className="text-[16px]">1-3 yr Exp</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={jobSite} alt="jobSite"  className="w-[17px] h-[14.3px]"/>
-                        <p className="text-[16px]">Onsite</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={salary} alt="salary" className="w-[16px] h-[18px]" />
-                        <p className="text-[16px]">12LPA</p>
-                    </div>
-                </div>
-                <div className="h-[86px]  line-clamp-4 truncate text-wrap  mt-4.5 mx-0.5">
-                    <p className="text-[14px]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit. </p>
-                </div>
-                <div>
-                    <button className="bg-[#00AAFF] w-full text-white text-[16px] py-[12px] px-[10px] rounded-[10px] mt-6 cursor-pointer">Apply Now</button>
-                </div>
-            </div>
-            <div className="w-[316px] h-[360px] border rounded-[16px] bg-white shadow-md p-3">
-                <div className="flex items-start justify-between ">
-                    <div className="w-[83px] h-[82px]">
-                        <img src={amazon} alt="amazon" />
-                    </div>
-                    <div className="flex mt-2.5 mr-1.5">
-                        <button className="rounded-[10px] bg-[#B0D9FF] text-black text-xs px-3 py-2">24h Ago</button>
-                    </div>
-                </div>
-                <div>
-                    <p className="text-[20px] font-[700] pl-1.5 pt-3">Full Stack Developer</p>
-                </div>
-                <div className="flex items-center  justify-between mt-2.5 mx-2 pr-3 text-[#5A5A5A]">
-                    <div className="flex items-center gap-1">
-                        <img src={Experience} alt="experience"  className="w-[17px] h-[13.2px]"/>
-                        <p className="text-[16px]">1-3 yr Exp</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={jobSite} alt="jobSite"  className="w-[17px] h-[14.3px]"/>
-                        <p className="text-[16px]">Onsite</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={salary} alt="salary" className="w-[16px] h-[18px]" />
-                        <p className="text-[16px]">12LPA</p>
-                    </div>
-                </div>
-                <div className="h-[86px]  line-clamp-4 truncate text-wrap  mt-4.5 mx-0.5">
-                    <p className="text-[14px]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit. </p>
-                </div>
-                <div>
-                    <button className="bg-[#00AAFF] w-full text-white text-[16px] py-[12px] px-[10px] rounded-[10px] mt-6 cursor-pointer">Apply Now</button>
-                </div>
-            </div>
-            <div className="w-[316px] h-[360px] border rounded-[16px] bg-white shadow-md p-3">
-                <div className="flex items-start justify-between ">
-                    <div className="w-[83px] h-[82px]">
-                        <img src={amazon} alt="amazon" />
-                    </div>
-                    <div className="flex mt-2.5 mr-1.5">
-                        <button className="rounded-[10px] bg-[#B0D9FF] text-black text-xs px-3 py-2">24h Ago</button>
-                    </div>
-                </div>
-                <div>
-                    <p className="text-[20px] font-[700] pl-1.5 pt-3">Full Stack Developer</p>
-                </div>
-                <div className="flex items-center  justify-between mt-2.5 mx-2 pr-3 text-[#5A5A5A]">
-                    <div className="flex items-center gap-1">
-                        <img src={Experience} alt="experience"  className="w-[17px] h-[13.2px]"/>
-                        <p className="text-[16px]">1-3 yr Exp</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={jobSite} alt="jobSite"  className="w-[17px] h-[14.3px]"/>
-                        <p className="text-[16px]">Onsite</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={salary} alt="salary" className="w-[16px] h-[18px]" />
-                        <p className="text-[16px]">12LPA</p>
-                    </div>
-                </div>
-                <div className="h-[86px]  line-clamp-4 truncate text-wrap  mt-4.5 mx-0.5">
-                    <p className="text-[14px]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit. </p>
-                </div>
-                <div>
-                    <button className="bg-[#00AAFF] w-full text-white text-[16px] py-[12px] px-[10px] rounded-[10px] mt-6 cursor-pointer">Apply Now</button>
-                </div>
-            </div>
-            <div className="w-[316px] h-[360px] border rounded-[16px] bg-white shadow-md p-3">
-                <div className="flex items-start justify-between ">
-                    <div className="w-[83px] h-[82px]">
-                        <img src={amazon} alt="amazon" />
-                    </div>
-                    <div className="flex mt-2.5 mr-1.5">
-                        <button className="rounded-[10px] bg-[#B0D9FF] text-black text-xs px-3 py-2">24h Ago</button>
-                    </div>
-                </div>
-                <div>
-                    <p className="text-[20px] font-[700] pl-1.5 pt-3">Full Stack Developer</p>
-                </div>
-                <div className="flex items-center  justify-between mt-2.5 mx-2 pr-3 text-[#5A5A5A]">
-                    <div className="flex items-center gap-1">
-                        <img src={Experience} alt="experience"  className="w-[17px] h-[13.2px]"/>
-                        <p className="text-[16px]">1-3 yr Exp</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={jobSite} alt="jobSite"  className="w-[17px] h-[14.3px]"/>
-                        <p className="text-[16px]">Onsite</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={salary} alt="salary" className="w-[16px] h-[18px]" />
-                        <p className="text-[16px]">12LPA</p>
-                    </div>
-                </div>
-                <div className="h-[86px]  line-clamp-4 truncate text-wrap  mt-4.5 mx-0.5">
-                    <p className="text-[14px]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit. </p>
-                </div>
-                <div>
-                    <button className="bg-[#00AAFF] w-full text-white text-[16px] py-[12px] px-[10px] rounded-[10px] mt-6 cursor-pointer">Apply Now</button>
-                </div>
-            </div>
-            <div className="w-[316px] h-[360px] border rounded-[16px] bg-white shadow-md p-3">
-                <div className="flex items-start justify-between ">
-                    <div className="w-[83px] h-[82px]">
-                        <img src={amazon} alt="amazon" />
-                    </div>
-                    <div className="flex mt-2.5 mr-1.5">
-                        <button className="rounded-[10px] bg-[#B0D9FF] text-black text-xs px-3 py-2">24h Ago</button>
-                    </div>
-                </div>
-                <div>
-                    <p className="text-[20px] font-[700] pl-1.5 pt-3">Full Stack Developer</p>
-                </div>
-                <div className="flex items-center  justify-between mt-2.5 mx-2 pr-3 text-[#5A5A5A]">
-                    <div className="flex items-center gap-1">
-                        <img src={Experience} alt="experience"  className="w-[17px] h-[13.2px]"/>
-                        <p className="text-[16px]">1-3 yr Exp</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={jobSite} alt="jobSite"  className="w-[17px] h-[14.3px]"/>
-                        <p className="text-[16px]">Onsite</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={salary} alt="salary" className="w-[16px] h-[18px]" />
-                        <p className="text-[16px]">12LPA</p>
-                    </div>
-                </div>
-                <div className="h-[86px]  line-clamp-4 truncate text-wrap  mt-4.5 mx-0.5">
-                    <p className="text-[14px]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit. </p>
-                </div>
-                <div>
-                    <button className="bg-[#00AAFF] w-full text-white text-[16px] py-[12px] px-[10px] rounded-[10px] mt-6 cursor-pointer">Apply Now</button>
-                </div>
-            </div>
-            <div className="w-[316px] h-[360px] border rounded-[16px] bg-white shadow-md p-3">
-                <div className="flex items-start justify-between ">
-                    <div className="w-[83px] h-[82px]">
-                        <img src={amazon} alt="amazon" />
-                    </div>
-                    <div className="flex mt-2.5 mr-1.5">
-                        <button className="rounded-[10px] bg-[#B0D9FF] text-black text-xs px-3 py-2">24h Ago</button>
-                    </div>
-                </div>
-                <div>
-                    <p className="text-[20px] font-[700] pl-1.5 pt-3">Full Stack Developer</p>
-                </div>
-                <div className="flex items-center  justify-between mt-2.5 mx-2 pr-3 text-[#5A5A5A]">
-                    <div className="flex items-center gap-1">
-                        <img src={Experience} alt="experience"  className="w-[17px] h-[13.2px]"/>
-                        <p className="text-[16px]">1-3 yr Exp</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={jobSite} alt="jobSite"  className="w-[17px] h-[14.3px]"/>
-                        <p className="text-[16px]">Onsite</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <img src={salary} alt="salary" className="w-[16px] h-[18px]" />
-                        <p className="text-[16px]">12LPA</p>
-                    </div>
-                </div>
-                <div className="h-[86px]  line-clamp-4 truncate text-wrap  mt-4.5 mx-0.5">
-                    <p className="text-[14px]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit. Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit.Quisquam, quos dolor sit amet consectetur adipisicing elit. </p>
-                </div>
-                <div>
-                    <button className="bg-[#00AAFF] w-full text-white text-[16px] py-[12px] px-[10px] rounded-[10px] mt-6 cursor-pointer">Apply Now</button>
-                </div>
-            </div>
-            
-          
         </div>
         </>
     )

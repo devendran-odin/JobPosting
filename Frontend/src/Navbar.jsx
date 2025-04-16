@@ -12,13 +12,17 @@ export default function Navbar() {
         }
     };
 
+    const handleClose = () => {
+        setShowJobOpening(false);
+    };
+
     return (
         <div className="pt-5 relative">
             {showJobOpening && (
                 <>
                     <div className="fixed inset-0 bg-black/60 z-40" onClick={handleOverlayClick} />
                     <div className="absolute top-[117px] left-1/2 transform -translate-x-1/2 z-50">
-                        <JobOpening />
+                        <JobOpening onClose={handleClose} />
                     </div>
                 </>
             )}
