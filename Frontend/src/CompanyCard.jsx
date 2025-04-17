@@ -1,6 +1,6 @@
 import amazon from "./assets/amazon.png";
 import tesla from "./assets/Tesla.png";
-import swiggy from "./assets/swiggy.png";
+import swiggy from "./assets/Swiggy.png";
 import logo from "./assets/logo.png";
 import location from "./assets/location.png";
 import jobSite from "./assets/jobSite.png";
