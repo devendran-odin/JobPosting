@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const jobSchema = new mongoose.Schema({
     jobTitle: {
         type: String,
-        required: [true, 'Job title is required'] // Added custom error message
+        required: [true, 'Job title is required'] 
     },
     companyName: {
         type: String,
@@ -18,13 +18,13 @@ const jobSchema = new mongoose.Schema({
         required: [true, 'Job type is required'],
         enum: {
             values: ['Full Time', 'Part Time', 'Contract', 'Internship'],
-            message: '{VALUE} is not a supported job type' // Custom enum error message
+            message: '{VALUE} is not a supported job type' 
         }
     },
     salaryMin: {
         type: Number,
         required: [true, 'Minimum salary is required'],
-        min: [0, 'Minimum salary cannot be negative'] // Added validation
+        min: [0, 'Minimum salary cannot be negative'] 
     },
     salaryMax: {
         type: Number,
@@ -46,7 +46,7 @@ const jobSchema = new mongoose.Schema({
         required: [true, 'Job description is required']
     }
 }, {
-    // Automatically add createdAt and updatedAt fields
+    
     timestamps: true 
 });
 
