@@ -5,7 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import publishImage from "./assets/PublishImage.png";
+import publishImage from "./assets/publishImage.png";
 import downArrowImage from "./assets/downArrow.png";
 import { useState } from "react";
 import toast from "react-hot-toast";
