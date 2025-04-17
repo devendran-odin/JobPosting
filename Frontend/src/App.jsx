@@ -6,19 +6,21 @@ import CompanyCard from "./CompanyCard"
 function App() {
   return (
     <>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            borderRadius: '10px',
-            background: '#333',
-            color: '#fff',
-          },
-        }}
-      />
-      <Navbar/>
-      <Filter/>
-      <CompanyCard/>
+      <div className='min-h-screen' >
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              borderRadius: '10px',
+              background: '#333',
+              color: '#fff',
+            },
+          }}
+        />
+        <Navbar/>
+        <Filter/>
+        <CompanyCard/>
+      </div>
     </>
   )
 }
